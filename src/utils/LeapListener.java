@@ -102,12 +102,13 @@ public class LeapListener extends Listener {
                             rollLeft.set(dAverage(rollLeftAverage));
                             yawLeft.set(dAverage(yawLeftAverage));
 
-                            Vector intersect = screen.intersect(h.palmPosition(),h.direction(), true);
-                            posLeftAverage.add(intersect);
+//                            Vector intersect = screen.intersect(h.palmPosition(),h.direction(), true);
+                            posLeftAverage.add(h.palmPosition()); // intersect
                             Vector avIntersect=vAverage(posLeftAverage);
-                            posHandLeft.setValue(new Point3D(screen.widthPixels()*Math.min(1d,Math.max(0d,avIntersect.getX())),
-                                    screen.heightPixels()*Math.min(1d,Math.max(0d,(1d-avIntersect.getY()))),
-                                    h.palmPosition().getZ()));
+//                            posHandLeft.setValue(new Point3D(screen.widthPixels()*Math.min(1d,Math.max(0d,avIntersect.getX())),
+//                                    screen.heightPixels()*Math.min(1d,Math.max(0d,(1d-avIntersect.getY()))),
+//                                    h.palmPosition().getZ()));
+                            posHandLeft.setValue(new Point3D(avIntersect.getX(),avIntersect.getY(), avIntersect.getZ()));
                         }
                         if(h.isRight()&& h.isValid()){
                             pitchRightAverage.add(new Double(h.direction().pitch()));
@@ -117,12 +118,13 @@ public class LeapListener extends Listener {
                             rollRight.set(dAverage(rollRightAverage));
                             yawRight.set(dAverage(yawRightAverage));
 
-                            Vector intersect = screen.intersect(h.palmPosition(),h.direction(), true);
-                            posRightAverage.add(intersect);
+//                            Vector intersect = screen.intersect(h.palmPosition(),h.direction(), true);
+                            posRightAverage.add(h.palmPosition()); // intersect
                             Vector avIntersect=vAverage(posRightAverage);
-                            posHandRight.setValue(new Point3D(screen.widthPixels()*Math.min(1d,Math.max(0d,avIntersect.getX())),
-                                    screen.heightPixels()*Math.min(1d,Math.max(0d,(1d-avIntersect.getY()))),
-                                    h.palmPosition().getZ()));
+//                            posHandRight.setValue(new Point3D(screen.widthPixels()*Math.min(1d,Math.max(0d,avIntersect.getX())),
+//                                    screen.heightPixels()*Math.min(1d,Math.max(0d,(1d-avIntersect.getY()))),
+//                                    h.palmPosition().getZ()));
+                            posHandRight.setValue(new Point3D(avIntersect.getX(),avIntersect.getY(), avIntersect.getZ()));
                         }
                         
                         FingerList fingers = h.fingers();

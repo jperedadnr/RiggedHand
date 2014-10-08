@@ -22,6 +22,7 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.input.MouseButton;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
@@ -44,7 +45,7 @@ import utils.DragSupport;
 public class RiggedHand extends Application {
 
     private final Translate translate = new Translate(0, 0, 0);
-    private final Translate translateZ = new Translate(0, 0, -1090);
+    private final Translate translateZ = new Translate(0, 0, -1070);
     private final Rotate rotateX = new Rotate(-120, 0, 0, 0, Rotate.X_AXIS);
     private final Rotate rotateY = new Rotate(180, 0, 0, 0, Rotate.Y_AXIS);
     private final Translate translateY = new Translate(0, 0, 0);
@@ -57,6 +58,7 @@ public class RiggedHand extends Application {
     private LeapListener listener = null;
     private Controller controller = null;
     private Bone previousBone=null;
+    private final double leapScale=20d;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -69,8 +71,9 @@ public class RiggedHand extends Application {
         Model downloaded from
         https://github.com/leapmotion/leapjs-rigged-hand/tree/master/src/models
         */
-        HandImporter handLeft=new HandImporter("left_hand_terrence_3.js");
-        handLeft.readModel(100f);
+//        HandImporter handLeft=new HandImporter("left_hand_terrence_3.js");
+        HandImporter handLeft=new HandImporter("modelLeft.json",true,false);
+        handLeft.readModel();
 
         forestLeft=handLeft.getJointForest();
         skinningLeft=handLeft.getSkinningMeshView();
@@ -79,7 +82,7 @@ public class RiggedHand extends Application {
         Model downloaded from 
         https://github.com/leapmotion/leapjs-rigged-hand/blob/master/src/models/hand_models_v1.js
         */
-        HandImporter handRight=new HandImporter("modelRight.json");
+        HandImporter handRight=new HandImporter("modelRight.json",false,false);
         handRight.readModel();
         forestRight=handRight.getJointForest();
         skinningRight=handRight.getSkinningMeshView();
@@ -112,6 +115,11 @@ public class RiggedHand extends Application {
                             listener.pitchLeftProperty().get(),
                             listener.yawLeftProperty().get());
                     
+                    Point3D moveLeft = listener.posHandLeftProperty().getValue().multiply(1d/leapScale);
+                    ((Joint)forestLeft.get(0)).t.setX(2-moveLeft.getX());
+                    ((Joint)forestLeft.get(0)).t.setY(moveLeft.getY());
+                    ((Joint)forestLeft.get(0)).t.setZ(-moveLeft.getZ());
+                    
                     ((SkinningMesh)skinningLeft.getMesh()).update();
                 });
             }
@@ -141,7 +149,11 @@ public class RiggedHand extends Application {
                     matrixRotateNode(true, listener.rollRightProperty().get(),
                             listener.pitchRightProperty().get(),
                             listener.yawRightProperty().get());
-
+                    Point3D moveRight = listener.posHandRightProperty().getValue().multiply(1d/leapScale);
+                    ((Joint)forestRight.get(0)).t.setX(-2-moveRight.getX());
+                    ((Joint)forestRight.get(0)).t.setY(moveRight.getY());
+                    ((Joint)forestRight.get(0)).t.setZ(-moveRight.getZ());
+                    
                     ((SkinningMesh)skinningRight.getMesh()).update();                    
                 });
             }
@@ -149,8 +161,8 @@ public class RiggedHand extends Application {
         
         Scene scene = new Scene(root, 800, 600, true, SceneAntialiasing.BALANCED);
         PerspectiveCamera perspectiveCamera = new PerspectiveCamera();
-        perspectiveCamera.setNearClip(0.01);
-//        perspectiveCamera.setFarClip(1000);
+        perspectiveCamera.setNearClip(0.001);
+        perspectiveCamera.setFarClip(10000);
         scene.setCamera(perspectiveCamera);
         primaryStage.setScene(scene);
         primaryStage.setTitle("RIGGED HANDS - JAVAFX 3D");
@@ -168,9 +180,9 @@ public class RiggedHand extends Application {
         DragSupport dragSupport3 = new DragSupport(scene, null, MouseButton.MIDDLE, Orientation.HORIZONTAL, translate.xProperty());
         DragSupport dragSupport4 = new DragSupport(scene, null, MouseButton.MIDDLE, Orientation.VERTICAL, translate.yProperty());
         
-        ((Joint)forestLeft.get(0)).t.setX(6);
+        ((Joint)forestLeft.get(0)).t.setX(4);
         ((SkinningMesh)skinningLeft.getMesh()).update();  
-        ((Joint)forestRight.get(0)).t.setX(-6);
+        ((Joint)forestRight.get(0)).t.setX(-4);
         ((SkinningMesh)skinningRight.getMesh()).update();  
     }
     

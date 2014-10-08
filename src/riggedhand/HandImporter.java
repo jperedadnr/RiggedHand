@@ -8,10 +8,12 @@ import com.javafx.experiments.shape3d.SkinningMesh;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javafx.geometry.Point3D;
 import javafx.scene.Parent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Translate;
@@ -19,6 +21,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.spi.JsonProvider;
+import utils.Axes;
 
 /**
  *
@@ -32,6 +35,8 @@ public class HandImporter {
     private PolygonMeshView skinningMeshView;
     
     private final boolean debug=true;
+    private final boolean skeletal;
+    private final boolean axes;
     
     /** HandImporter provides a way to import THREE.js models in JSON format, formatVersion 3.1
      * https://github.com/mrdoob/three.js/wiki/JSON-Model-format-3
@@ -47,8 +52,12 @@ public class HandImporter {
      *    material_index, vertex_normal, vertex_normal, vertex_normal}
      * 
      * @param nameFile file with JSON format
+     * @param skeletal hide or show bones(joints)
+     * @param axes hide or show local coordinate systems on joints
      */
-    public HandImporter(String nameFile){
+    public HandImporter(String nameFile, boolean skeletal, boolean axes){
+        this.skeletal=skeletal;
+        this.axes=axes;
         reader = JsonProvider.provider().createReader(HandImporter.class.getResourceAsStream("/resources/"+nameFile));
     }
     
@@ -187,11 +196,20 @@ public class HandImporter {
             bindTransforms[i] = new Affine();
             int parentIndex = bone.getInt("parent");
             if (parentIndex == -1) {
+                if(axes){
+                    joint.getChildren().add(new Axes(0.04));
+                }
                 jointForest.add(joint);
                 bindTransforms[i] = new Affine(new Translate(-x, -y, -z));
             } else {
+                if(axes){
+                    joint.getChildren().add(new Axes(0.02));
+                }
                 Joint parent = joints.get(parentIndex);
                 parent.getChildren().add(joint);
+                if(skeletal){
+                    parent.getChildren().add(new Bone(0.02,new Point3D(x, y, z)));
+                }
                 try {
                     bindTransforms[i] = new Affine(joint.getLocalToSceneTransform().createInverse());
                 } catch (NonInvertibleTransformException ex) {
@@ -243,8 +261,10 @@ public class HandImporter {
         phongMaterial.setDiffuseColor(Color.SANDYBROWN);
         skinningMeshView.setMaterial(phongMaterial);
 //        skinningMeshView.setSubdivisionLevel(1); // NOT SUPPORTED FOR SKINNING MESHES
-//        skinningMeshView.setDrawMode(DrawMode.LINE);
-        skinningMeshView.setCullFace(CullFace.NONE);
+        if(skeletal){
+            skinningMeshView.setDrawMode(DrawMode.LINE);
+        }
+        skinningMeshView.setCullFace(CullFace.BACK);
     }
     
     public PolygonMeshView getSkinningMeshView() { return skinningMeshView; }
